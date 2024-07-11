@@ -1,6 +1,7 @@
+from flask import Flask, request
 import requests
-import time
-                                         
+import os
+
 #⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 #⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢄⢔⢆⢏⢎⢎⠄⠀⠀⠀⠀⠀⠀⢀⢎⢎⢇⢇⢆⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 #⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⢸⢸⢸⢸⢸⢸⠀⠀⡀⠀⠀⢀⢎⢎⢎⢎⢎⢎⢎⠆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -27,16 +28,17 @@ import time
 #⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
 # This is a project where you can show your love of Godot to others.
-# This code shows the repositories your GDScript is used in and the total number of commits, although it's still CLI. We'll be updating it to be distributed as a badge in the future.
 
+app = Flask(__name__)
 
-# This function serves to get a list of all repositories for a specific GitHub user.
-def get_user_repos(username, token):
+github_token = os.getenv("GITHUB_TOKEN")
+
+def get_user_repos(username):
     repos = []
     page = 1
     while True:
         url = f"https://api.github.com/users/{username}/repos?page={page}&per_page=100"
-        headers = {"Authorization": f"token {token}"}
+        headers = {"Authorization": f"token {github_token}"}
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             page_repos = response.json()
@@ -45,57 +47,59 @@ def get_user_repos(username, token):
             repos.extend(page_repos)
             page += 1
         else:
-            print(f"Error: {response.status_code}")
+            print(f"Error fetching repositories: {response.status_code}, {response.text}")
             return None
     return repos
 
-# This function serves to get information about the languages used in a particular repository.
-def get_repo_languages(owner, repo, token):
+def get_repo_languages(owner, repo):
     url = f"https://api.github.com/repos/{owner}/{repo}/languages"
-    headers = {"Authorization": f"token {token}"}
+    headers = {"Authorization": f"token {github_token}"}
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"Error:{owner}/{repo}: {response.status_code}")
+        print(f"Error fetching languages for {repo}: {response.status_code}, {response.text}")
         return None
 
-# This function serves to get the total number of commits in a specific repository.
-def get_repo_commits(owner, repo, token):
+def get_repo_commits(owner, repo):
     url = f"https://api.github.com/repos/{owner}/{repo}/commits"
-    headers = {"Authorization": f"token {token}"}
+    headers = {"Authorization": f"token {github_token}"}
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         commits = response.json()
         return len(commits)
     else:
-        print(f"Error:{owner}/{repo}: {response.status_code}")
+        print(f"Error fetching commits for {repo}: {response.status_code}, {response.text}")
         return 0
 
-if __name__ == "__main__":
-    owner = ""
-    token = ""  # Hardcoded code for testing purposes. We will remove it in the future.
-
-    repos = get_user_repos(owner, token)
+@app.route('/badge')
+def badge():
+    owner = request.args.get('username')
+    if not owner:
+        return "Username not provided", 400
+    
+    repos = get_user_repos(owner)
     if repos is None:
-        exit(1)
+        return "Error fetching repositories", 500
 
     gdscript_repos = []
-
     for repo in repos:
-        languages = get_repo_languages(owner, repo['name'], token)
+        languages = get_repo_languages(owner, repo['name'])
         if languages and 'GDScript' in languages:
             gdscript_repos.append(repo['name'])
 
-    print(f"Owner: {owner}")
-    print(f"Repositories using GDScript:")
-    
     total_commit = 0
-
     for repo in gdscript_repos:
-        commits = get_repo_commits(owner, repo, token)
+        commits = get_repo_commits(owner, repo)
         total_commit += commits
 
-        print(f"- {repo}: {commits} commits")
-    print(f"Total GDScript commits: {total_commit}")
+    result = f"Owner: {owner}\nRepositories using GDScript:\n"
+    for repo in gdscript_repos:
+        commits = get_repo_commits(owner, repo)
+        result += f"- {repo}: {commits} commits\n"
+    result += f"Total GDScript commits: {total_commit}"
 
+    return result
+
+if __name__ == "__main__":
+    app.run(debug=True)

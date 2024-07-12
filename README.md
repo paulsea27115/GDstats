@@ -1,3 +1,3 @@
 # GDstats
 
-![maldron](gdstats.vercel.app/badge?username=maldron0309)
+![maldron](https://gdstats.vercel.app/badge?username=maldron0309)

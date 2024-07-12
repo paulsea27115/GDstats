@@ -1,6 +1,7 @@
-from flask import Flask, request
+from flask import Flask, request, Response, send_from_directory
 import requests
 import os
+from svg_generator import generate_svg
 
 #⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 #⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢄⢔⢆⢏⢎⢎⠄⠀⠀⠀⠀⠀⠀⢀⢎⢎⢇⢇⢆⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -31,7 +32,7 @@ import os
 
 app = Flask(__name__)
 
-github_token = os.getenv("GITHUB_TOKEN")
+github_token = os.getenv('GITHUB_TOKEN')
 
 def get_user_repos(username):
     repos = []
@@ -72,6 +73,10 @@ def get_repo_commits(owner, repo):
         print(f"Error fetching commits for {repo}: {response.status_code}, {response.text}")
         return 0
 
+@app.route('/images/<path:filename>')
+def send_image(filename):
+    return send_from_directory('images', filename)
+
 @app.route('/badge')
 def badge():
     owner = request.args.get('username')
@@ -93,13 +98,10 @@ def badge():
         commits = get_repo_commits(owner, repo)
         total_commit += commits
 
-    result = f"Owner: {owner}\nRepositories using GDScript:\n"
-    for repo in gdscript_repos:
-        commits = get_repo_commits(owner, repo)
-        result += f"- {repo}: {commits} commits\n"
-    result += f"Total GDScript commits: {total_commit}"
+    godot_logo_url = request.host_url + 'images/godot.png'
+    svg = generate_svg(owner, godot_logo_url, total_commit)
 
-    return result
+    return Response(svg, mimetype='image/svg+xml')
 
 if __name__ == "__main__":
     app.run(debug=True)

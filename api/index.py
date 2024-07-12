@@ -117,6 +117,9 @@ def badge():
 
     godot_img_name = "godot.png"
 
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    godot_img_path = os.path.join(current_dir, 'images', godot_img_name)
+
     godot_logo_url = base64.b64encode(open(f"./images/{godot_img_name}", "rb").read())
 
     svg = f"""

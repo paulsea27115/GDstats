@@ -33,6 +33,8 @@ import os
 app = Flask(__name__)
 
 github_token = os.getenv('GITHUB_TOKEN')
+if not github_token:
+  print("GITHUB_TOKEN not set")
 
 def get_user_repos(username):
     repos = []

@@ -54,7 +54,7 @@ def send_image(filename):
 def badge():
     owner = request.args.get('username')
     if not owner:
-        return "Username not provided", 400
+        return "Username not provided", 404
     
     repos = get_user_repos(owner)
     if repos is None:
@@ -74,7 +74,7 @@ def badge():
     godot_logo_url = url_for('send_image', filename='godot.png', _external=True)
     svg = generate_svg(owner, godot_logo_url, total_commit)
 
-    return Response(svg, mimetype='image/svg+xml')
+    return Response(svg, mimetype='images/svg+xml')
 
 if __name__ == "__main__":
     app.run(debug=True)

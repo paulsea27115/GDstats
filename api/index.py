@@ -97,7 +97,7 @@ def badge():
         commits = get_repo_commits(owner, repo)
         total_commit += commits
 
-    godot_logo_url = request.host_url + 'images/godot.png'
+    godot_logo_url = "https://gdstats.vercel.app/" + "images/godot.png"
 
     svg = f"""
     <svg

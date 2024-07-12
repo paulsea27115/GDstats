@@ -1,38 +1,13 @@
-from flask import Flask, request, Response, send_from_directory
+from flask import Flask, request, Response
 import requests
 import base64
 import os
 
-#⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢄⢔⢆⢏⢎⢎⠄⠀⠀⠀⠀⠀⠀⢀⢎⢎⢇⢇⢆⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⢸⢸⢸⢸⢸⢸⠀⠀⡀⠀⠀⢀⢎⢎⢎⢎⢎⢎⢎⠆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢐⢕⢕⢕⢕⢕⢕⢕⢭⢣⢣⢫⢹⢸⢸⢸⢸⢸⢸⢸⢸⡈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⡠⡰⡱⡱⡱⡕⡕⣕⢕⢕⢕⢕⢕⢕⢕⢕⡕⡵⡱⡕⡕⡕⡆⡄⡀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⢀⢆⢇⢇⢆⢄⢀⢔⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢤⢀⢠⢰⢪⢱⠥⡀⠀⠀⠀⠀
-#⠀⠀⠀⡰⡱⡱⡱⡱⡕⡕⡕⡕⡕⡕⡕⣕⢕⢇⢇⢇⢇⢇⢇⢗⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢭⢢⠀⠀⠀
-#⠀⠀⠘⡜⡜⡜⣜⢜⢜⢜⢜⢜⢜⢜⢎⢎⢎⢎⢎⢎⢇⢇⢇⢇⢇⢇⢏⢎⢎⢮⢪⢪⡪⡪⡪⡣⡣⡳⡱⡱⡱⡕⡕⡕⡕⡕⡕⠅⠀⠀
-#⠀⠀⠀⠘⢜⢜⢜⢜⢜⢜⢜⡪⡕⡕⡕⡕⡕⡕⡕⡕⡕⡕⣕⢕⢵⢱⢱⢱⡱⡱⡱⡱⡱⡱⡱⡱⡱⡱⡱⡱⡱⡱⡱⡱⡹⡸⠈⠀⠀⠀
-#⠀⠀⠀⠀⠈⡪⡪⡪⡪⡪⡣⡣⠣⠃⠣⠃⠇⡇⡧⡓⡭⡪⡪⡪⡪⡪⡪⡕⡎⡎⡎⡎⡎⡎⠪⠊⠪⠪⡪⣪⢪⡪⡪⡪⡪⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⡣⡣⡫⡪⡪⡊⠀⢀⡠⣤⢤⣀⠈⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⢜⠜⠀⣀⣤⢤⢄⠀⠈⠪⡪⡪⡪⡪⡎⠄⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⡣⡣⡣⡣⣓⠀⠀⣞⢾⢽⣝⣞⡆⠀⡇⡇⡇⡇⡇⠀⠀⢑⢕⢕⢕⢕⠁⣸⣳⢽⢽⢽⣕⠀⠀⡣⡣⡣⡣⣓⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⡣⡣⡣⡣⣣⢀⠀⢫⢯⣗⣗⣗⠏⠠⡪⡪⡪⡪⡂⠀⠀⢐⢕⢕⢕⢕⠄⠸⣞⡽⣝⡷⡝⠀⢀⢇⢇⢇⢇⠧⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⡣⡣⡣⡫⡪⣒⢄⢀⠁⠃⠃⡁⡄⡇⡇⡇⡏⡎⡆⠀⠀⢐⢕⢕⢕⢇⢏⢄⡈⠉⠑⠁⡀⡄⡎⡎⡎⡎⡎⡇⠂⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢇⢖⢔⢕⢕⢝⢜⢜⢜⢜⢜⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢭⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠑⠑⠑⠑⠕⠑⠕⠕⡕⡕⡕⡕⡕⡕⡕⣕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⢕⠕⠕⠑⠕⠑⠑⠑⠁⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⡆⡆⡆⡆⡤⡠⠄⠀⢸⢸⢸⢸⢸⢸⡸⡀⠁⠈⠀⠁⠈⠀⠁⠈⠨⡪⡣⡣⡳⡱⡱⡑⠀⠠⡄⡤⡰⡰⡢⣒⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⢕⢕⢕⢕⢕⢕⢕⠀⠱⠱⠕⢕⢕⢕⢕⠀⢈⠮⡍⡇⡏⡝⡜⡄⠀⢕⢕⠕⠕⠕⠕⠕⠀⢜⢜⢜⢜⢜⢜⢆⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠘⡜⡜⡎⡎⡮⣒⢄⢄⣀⣀⢀⡀⡀⡀⡀⢔⢕⢕⢕⢕⢕⢕⢅⢀⢀⢀⡀⡠⡀⡄⡄⡄⡕⡕⡕⣕⢕⢕⠅⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠀⠘⢜⢜⢜⢜⢔⢕⢕⡲⡸⡸⡸⡸⡸⡸⡸⡸⡪⡪⡪⡣⡣⡫⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⠂⠀⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠀⠀⠀⠈⠪⢪⢪⢪⢪⢪⢪⢪⢪⢪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⡪⠃⠁⠀⠀⠀⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠃⠣⠣⠣⡳⡱⡱⡱⡹⡸⡸⡪⡪⡪⣪⢪⡪⡪⣪⢪⠺⠸⠑⠉⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠁⠁⠁⠁⠁⠉⠈⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-#⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-
-# This is a project where you can show your love of Godot to others.
-
 app = Flask(__name__)
 
 github_token = os.getenv('GITHUB_TOKEN')
+if not github_token:
+    print("GITHUB_TOKEN not set")
 
 def get_user_repos(username):
     repos = []
@@ -86,18 +61,13 @@ def indexPage():
             </body>
         </html>
         """
-    
-
-@app.route('/images/<path:filename>')
-def send_image(filename):
-    return send_from_directory('images', filename)
 
 @app.route('/badge')
 def badge():
     owner = request.args.get('username')
     if not owner:
         return "Username not provided", 400
-    
+
     repos = get_user_repos(owner)
     if repos is None:
         return "Error fetching repositories", 500
@@ -115,7 +85,14 @@ def badge():
 
     godot_img_name = "godot.png"
 
-    godot_logo_url = base64.b64encode(open(f"./images/{godot_img_name}", "rb").read())
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    godot_img_path = os.path.join(current_dir, 'images', godot_img_name)
+
+    try:
+        with open(godot_img_path, "rb") as image_file:
+            godot_logo_url = base64.b64encode(image_file.read()).decode('utf-8')
+    except FileNotFoundError:
+        return "Image file not found", 500
 
     svg = f"""
     <svg
@@ -204,7 +181,7 @@ def badge():
       />
       <g class="profile" data-testid="card-title" transform="translate(20, 20)">
         <foreignObject class="profile-image" width="300" height="300" x="-20" y="-45">
-          <xhtml:img width="120" height="120" src="data:image/png;base64,{godot_logo_url.decode('utf-8')}"/>
+          <xhtml:img width="120" height="120" src="data:image/png;base64,{godot_logo_url}"/>
         </foreignObject>
         <text x="105" y="20.5" class="header">{owner}</text>
         <g transform="translate(105, 28)">
@@ -234,7 +211,7 @@ def badge():
       </g>
     </svg>
     """
-    
+
     return Response(svg, mimetype='image/svg+xml')
 
 if __name__ == "__main__":

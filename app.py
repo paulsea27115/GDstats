@@ -87,7 +87,7 @@ def badge():
         return "Error fetching repositories", 500
 
     gdscript_repos = []
-    for repo in repos:
+    for repo in repos: 
         languages = get_repo_languages(owner, repo['name'])
         if languages and 'GDScript' in languages:
             gdscript_repos.append(repo['name'])

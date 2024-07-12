@@ -1,5 +1,6 @@
 from flask import Flask, request, Response, send_from_directory
 import requests
+import base64
 import os
 
 #⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -72,6 +73,21 @@ def get_repo_commits(owner, repo):
         print(f"Error fetching commits for {repo}: {response.status_code}, {response.text}")
         return 0
 
+@app.route('/')
+def indexPage():
+    return """
+    <!DOCTYPE HTML>
+        <html>
+            <head>
+                <title>Page by Flask</title>
+            </head>
+            <body>
+                <h1>This Page is stats index page. just check</h1>
+            </body>
+        </html>
+        """
+    
+
 @app.route('/images/<path:filename>')
 def send_image(filename):
     return send_from_directory('images', filename)
@@ -97,7 +113,9 @@ def badge():
         commits = get_repo_commits(owner, repo)
         total_commit += commits
 
-    godot_logo_url = "https://gdstats.vercel.app/" + "images/godot.png"
+    godot_img_name = "godot.png"
+
+    godot_logo_url = base64.b64encode(open(f"./images/{godot_img_name}", "rb").read())
 
     svg = f"""
     <svg
@@ -186,7 +204,7 @@ def badge():
       />
       <g class="profile" data-testid="card-title" transform="translate(20, 20)">
         <foreignObject class="profile-image" width="300" height="300" x="-20" y="-45">
-          <xhtml:img width="120" height="120" src="{godot_logo_url}"/>
+          <xhtml:img width="120" height="120" src="data:image/png;base64,{godot_logo_url.decode('utf-8')}"/>
         </foreignObject>
         <text x="105" y="20.5" class="header">{owner}</text>
         <g transform="translate(105, 28)">

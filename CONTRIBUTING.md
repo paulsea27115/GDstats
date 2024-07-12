@@ -4,7 +4,6 @@ This document is intended to guide those interested in contributing to the GDsta
 Our GDstats project primarily uses **English** as the common language for the benefit of contributors worldwide.
 Therefore, please write issues, feature requests, pull requests, and commit messages in English.
 ## Table of contents
-- 
 - [Reporting bugs](#reporting-bugs)
 - [Proposing features or improvements](#proposing-features-or-improvements)
 - [Contributing pull requests](#contributing-pull-requests)
